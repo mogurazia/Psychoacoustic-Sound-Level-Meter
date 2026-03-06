@@ -1,17 +1,10 @@
 let audioCtx, analyser, micStream;
 let running = false;
-let calibOffset = 110;
+let offsetDB = 110;
 let drawTimer = null;
 
 const canvas = document.getElementById("psdCanvas");
 const ctx = canvas.getContext("2d");
-
-// 1/3オクターブバンド設定
-const CENTER_FREQUENCIES = [
-    25, 31.5, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 
-    1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 12500
-];
-const A_CORRECTION = [-17,-14,-11,-9,-7,-5,-4,-3,-2,-1,0,0,0,0,0,0,0,0.5,1,2,3,4,4,3,1,0,-2,-5];
 
 function resizeCanvas() {
   canvas.width = canvas.clientWidth;
@@ -30,10 +23,10 @@ document.getElementById("startStopBtn").onclick = async () => {
 
 document.getElementById("calibBtn").onclick = () => {
   document.getElementById("calibDialog").style.display = "block";
-  document.getElementById("calibInput").value = calibOffset;
+  document.getElementById("calibInput").value = offsetDB;
 };
 document.getElementById("calibOk").onclick = () => {
-  calibOffset = parseFloat(document.getElementById("calibInput").value);
+  offsetDB = parseFloat(document.getElementById("calibInput").value);
   document.getElementById("calibDialog").style.display = "none";
 };
 document.getElementById("calibCancel").onclick = () => {
@@ -77,79 +70,119 @@ function updateAll() {
   
   const results = calculateAcousticParameters(buffer, sampleRate);
   
-  document.getElementById("dbaValue").textContent = results.dBA.toFixed(1);
+  document.getElementById("dbaValue").textContent = results.SPL.toFixed(1);
   document.getElementById("loudnessValue").textContent = results.loudness.toFixed(2);
   document.getElementById("sharpnessValue").textContent = results.sharpness.toFixed(2);
 
-  drawPSD(buffer, sampleRate);
+  drawFFT(buffer, sampleRate);
 }
 
 // ------------------------------
-// Acoustic Calculation
+// Calculation
 // ------------------------------
 function calculateAcousticParameters(buffer, sampleRate) {
-  const binHz = sampleRate / (buffer.length * 2);
-  let bandsEnergy = new Array(CENTER_FREQUENCIES.length).fill(0);
-  let totalEnergyA = 0;
+  const BIN_f = sampleRate / (buffer.length * 2);
 
+  // 3rd oct
+  const CENTER_FREQ_3RD_OCT = [
+    20, 25, 31.5, 40, 50, 63, 80, 100, 125, 160, 
+    200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 
+    2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 12500, 16000, 20000
+    ];
+  const LOWER_FRQE_3RD_OCT = [
+    17.8, 22.3, 28.1, 35.6, 44.5, 56.1, 71.3, 89.1, 111.4, 142.5,
+    178.2, 222.7, 280.6, 356.4, 445.4, 561.3, 712.7, 890.9, 1113.6, 1425.4, 
+    1781.8, 2227.2, 2806.3, 3563.6, 4454.5, 5612.7, 7127.2, 8909.0, 11136.2, 14254.4, 17818.0
+  ];
+  const UPPER_FREQ_3RD_OCT = [
+    22.4, 28.1, 35.4, 44.9, 56.1, 70.7, 89.8, 112.2, 140.3, 179.6, 
+    224.5, 280.6, 353.6, 449.0, 561.2, 707.2, 898.0, 1122.5, 1403.1, 1795.9,
+    2244.9, 2806.2, 3535.8, 4489.8, 5612.3, 7071.5, 8979.7, 11224.6, 14030.8, 17959.4, 22449.2
+  ];
+  const CENTER_FREQ_EBR = [
+    0.198, 0.247, 0.311, 0.395, 0.494, 0.622, 0.790, 0.987, 1.232, 1.575, 
+    1.963, 2.445, 3.061, 3.847, 4.736, 5.830, 7.141, 8.511, 9.974, 11.633, 
+    13.104, 14.509, 15.888, 17.259, 18.539, 19.894, 21.275, 22.424, 23.345, 24.094, 24.575
+  ];
+  const DELTA_FREQ_EBR = [
+    0.046, 0.057, 0.072, 0.091, 0.114, 0.144, 0.183, 0.228, 0.284, 0.361, 
+    0.448, 0.554, 0.684, 0.841, 1.005, 1.181, 1.350, 1.473, 1.542, 1.545, 
+    1.492, 1.416, 1.347, 1.319, 1.340, 1.359, 1.277, 1.078, 0.830, 0.587, 0.422
+  ];
+  const GA = [
+    -40, -31.5, -25.5, -21, -18.5, -16, -14, -12, -10.9, -9.2, 
+    -8, -6.5, -4.5, -2.9, -2.2, -0.4, 0.1, 0.1, -1.3, 0.6, 
+    3.8, 6.8, 8.1, 7.6, 3.7, -3.8, -10.5, -11.7, -10, -30, -57.5
+  ];
+  const E_THRESHOLD = [
+    70794578.4, 7413102.4, 891250.9, 128825, 25118.9, 5623.4, 1412.5, 446.7, 162.2, 61.7, 
+    27.5, 13.8, 7.2, 4.2, 2.8, 2, 1.7, 1.7, 2.2, 1.5, 
+    0.7, 0.4, 0.3, 0.3, 0.7, 4, 18.2, 24.5, 17, 316.2, 100000000 
+  ];
+  
+  let BAND_ENERGY_3RD_OCT = new Array(31).fill(0);
+  let BAND_dB_3RD_OCT = new Array(31).fill(0);
+  let TOTAL_ENERGY_A = 0;
+
+  // FFT描画用
   for (let i = 0; i < buffer.length; i++) {
-    let freq = i * binHz;
-    if (freq < 20 || freq > 20000) continue;
+    let f = i * BIN_f;
+    if (f < 17.8 || f > 22449.2) continue;  //From Lower cutoff of 20Hz band to Upper cuttof of 20kHz band
+    
+    let L_dB = buffer[i] + offsetDB;
+    // SPL計算用のA特性
+    let L_dBA = L_dB + Aweight(f);
+    TOTAL_ENERGY_A += Math.pow(10, L_dBA / 10); // ➡ return SPLへ
 
-    let dbRaw = buffer[i] + calibOffset;
-    let energy = Math.pow(10, dbRaw / 10);
-
-    let dbA = dbRaw + Aweight(freq);
-    totalEnergyA += Math.pow(10, dbA / 10);
-
-    for (let j = 0; j < CENTER_FREQUENCIES.length; j++) {
-      let lower = CENTER_FREQUENCIES[j] / 1.122;
-      let upper = CENTER_FREQUENCIES[j] * 1.122;
-      if (freq >= lower && freq < upper) {
-        bandsEnergy[j] += energy;
+    // 1/3オクターブに振り分け
+    let L_energy = Math.pow(10, L_dB / 10);
+    for (let j = 0; j < 30; j++) {
+      if (f >= LOWER_FRQE_3RD_OCT[j] && f < UPPER_FREQ_3RD_OCT[j]) {
+        BAND_ENERGY_3RD_OCT[j] += L_energy;
         break;
       }
     }
   }
 
-  let nSpec = new Array(CENTER_FREQUENCIES.length).fill(0);
-  for (let i = 0; i < CENTER_FREQUENCIES.length; i++) {
-    if (bandsEnergy[i] > 1e-12) {
-      let avgDb = 10 * Math.log10(bandsEnergy[i]);
-      let correctedLevel = avgDb + A_CORRECTION[i];
-      nSpec[i] = 0.063 * Math.pow(10, 0.023 * correctedLevel);
+  // Loudness計算
+  let BAND_ENERGY_CORRECTED = new Array(31).fill(0);
+  let BAND_N = new Array(31).fill(0);
+  let TOTAL_LOUDNESS = 0;
+
+  for (let i = 0; i < 30; i++) {
+    if (BAND_ENERGY_3RD_OCT[i] > 1e-12) {
+        BAND_dB_3RD_OCT[i] = 10 * Math.log10(BAND_ENERGY_3RD_OCT[i]);
     }
+    BAND_ENERGY_CORRECTED[i] = Math.pow(10, (BAND_dB_3RD_OCT[i] + GA[i]) / 10);
+    BAND_N[i] = Math.max(
+      0.08 * Math.pow(E_THRESHOLD[i] / E_THRESHOLD[17], 0.23) * Math.pow(1 + (BAND_ENERGY_CORRECTED[i] - E_THRESHOLD[i]) / E_THRESHOLD[i], 0.23) -1 ,
+      0
+    );
+    TOTAL_LOUDNESS += BAND_N[i] / DELTA_FREQ_EBR[i];
   }
 
-  const s = 0.85;
-  for (let i = 1; i < nSpec.length; i++) {
-    nSpec[i] = Math.max(nSpec[i], nSpec[i - 1] * s);
-  }
+  // Sharpness計算
+  let AURES = new Array(31).fill(0);
+  let BAND_S = new Array(31).fill(0);
+  let TOTAL_SHARPNESS = 0;
 
-  const totalSone = nSpec.reduce((sum, val) => sum + val, 0);
-
-  let sharpness = 0;
-  if (totalSone > 0) {
-    let weightedSum = 0;
-    for (let i = 0; i < nSpec.length; i++) {
-      let z = hzToBark(CENTER_FREQUENCIES[i]);
-      let gz = (z <= 15) ? 1.0 : Math.exp(0.171 * (z - 15));
-      weightedSum += nSpec[i] * gz * z;
-    }
-    sharpness = 0.11 * (weightedSum / totalSone);
+  for (let i = 0; i < 30; i++) {
+    AURES[i] = 0.078 * (Math.exp(0.171 * CENTER_FREQ_EBR[i]) / CENTER_FREQ_EBR[i]) * (TOTAL_LOUDNESS / Math.log(0.05 * TOTAL_LOUDNESS + 1));
+    BAND_S[i] = BAND_N[i] * CENTER_FREQ_EBR[i] * AURES[i];
+    TOTAL_SHARPNESS += BAND_S[i];
   }
 
   return {
-    loudness: totalSone,
-    sharpness: sharpness,
-    dBA: 10 * Math.log10(totalEnergyA + 1e-12)
+    loudness: TOTAL_LOUDNESS,
+    sharpness: TOTAL_SHARPNESS,
+    SPL: 10 * Math.log10(TOTAL_ENERGY_A + 1e-12)
   };
 }
 
 // ------------------------------
 // Drawing
 // ------------------------------
-function drawPSD(buffer, sampleRate) {
+function drawFFT(buffer, sampleRate) {
   const W = canvas.width;
   const H = canvas.height;
   ctx.fillStyle = "black";
@@ -157,18 +190,18 @@ function drawPSD(buffer, sampleRate) {
 
   drawGrid(W, H);
 
-  const binHz = sampleRate / (buffer.length * 2);
+  const BIN_f = sampleRate / (buffer.length * 2);
   ctx.strokeStyle = "#00FF00";
   ctx.lineWidth = 2;
   ctx.beginPath();
 
   let first = true;
   for (let i = 0; i < buffer.length; i++) {
-    const f = i * binHz;
+    const f = i * BIN_f;
     if (f < 20 || f > 20000) continue;
     
     // グラフ描画にもA特性を適用
-    const db = buffer[i] + calibOffset + Aweight(f);
+    const db = buffer[i] + offsetDB + Aweight(f);
     
     const x = freqToX(f, W);
     const y = dBToY(db, H);
@@ -206,15 +239,20 @@ function drawGrid(W, H) {
 }
 
 // ------------------------------
-// Utils
+// A-weight
 // ------------------------------
-function Aweight(f) {
-  const f2 = f*f;
-  const num = 12200*12200 * f2*f2;
-  const den = (f2 + 20.6*20.6) * Math.sqrt((f2 + 107.7*107.7)*(f2 + 737.9*737.9)) * (f2 + 12200*12200);
-  return 2.0 + 20*Math.log10(num/den);
+function Aweight(x) {
+  const f1 = 432.64;    //20.8^2
+  const f2 = 11599.29;  //107.7^2
+  const f3 = 544496.41; //737.9^2
+  const f4 = 148693636; //12194^2
+  const x2 = x * x;
+  return 20 * Math.log10((f4 * x2 * x2) / ((x2 + f1) * Math.sqrt(x2 + f2) * Math.sqrt(x2 + f3) * (x2 + f4))) + 2;
 }
 
-function hzToBark(f) {
-  return 13 * Math.atan(0.00076 * f) + 3.5 * Math.atan(Math.pow(f / 7500, 2));
+// ------------------------------
+// Hz to Bark
+// ------------------------------
+function hzToBark(x) {
+  return 13 * Math.atan(0.00076 * x) + 3.5 * Math.atan(0.0000000177768889 * x * x);
 }
