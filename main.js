@@ -152,19 +152,19 @@ function calculateAcousticParameters(buffer, sampleRate) {
   let N_BAND = new Array(31).fill(0);
   let TOTAL_LOUDNESS = 0;
 
-  for (let i = 0; i < 31; i++) {
-    if (E_3RDOCT_BAND[i] > 1e-12) {
-        DB_3RDOCT_BAND[i] = 10 * Math.log10(E_3RDOCT_BAND[i]);      // 1/3オクターブに振り分けられたエネルギーをdB化
+  for (let k = 0; k < 31; k++) {
+    if (E_3RDOCT_BAND[k] > 1e-12) {
+        DB_3RDOCT_BAND[k] = 10 * Math.log10(E_3RDOCT_BAND[k]);      // 1/3オクターブに振り分けられたエネルギーをdB化
       }
-    DB_BAND_CORRECTED[i] = DB_3RDOCT_BAND[i] + DB_GAIN[i];          // 1/3オクターブバントのdBに外耳ゲインと中耳ゲインを足す
-    E_BAND_CORRECTED[i] = Math.pow(10, DB_BAND_CORRECTED[i] / 10);  // 補正されたオクターブバンドdBをエネルギーにする
+    DB_BAND_CORRECTED[k] = DB_3RDOCT_BAND[k] + DB_GAIN[k];          // 1/3オクターブバントのdBに外耳ゲインと中耳ゲインを足す
+    E_BAND_CORRECTED[k] = Math.pow(10, DB_BAND_CORRECTED[k] / 10);  // 補正されたオクターブバンドdBをエネルギーにする
     console.log(E_BAND_CORRECTED[17]);
-    N_BAND[i] = Math.max(
-      0.08 * Math.pow(E_THRESHOLD[i] / E_THRESHOLD[17], 0.23) * Math.pow(1 + (E_BAND_CORRECTED[i] / E_THRESHOLD[i]), 0.23) -1 ,
+    N_BAND[k] = Math.max(
+      0.08 * Math.pow(E_THRESHOLD[k] / E_THRESHOLD[17], 0.23) * Math.pow(1 + (E_BAND_CORRECTED[k] / E_THRESHOLD[k]), 0.23) -1 ,
       0
     );  //=MAX(0.08*(Ethr/E0)^0.23*((1+E/Ethr)^0.23-1),0)
     //console.log(N_BAND[17]);
-    TOTAL_LOUDNESS += N_BAND[i] / EBR_DELTA[i];
+    TOTAL_LOUDNESS += N_BAND[k] / EBR_DELTA[k];
   }
 
   // Sharpness計算
