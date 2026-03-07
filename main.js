@@ -155,10 +155,10 @@ function calculateAcousticParameters(buffer, sampleRate) {
   for (let i = 0; i < 31; i++) {
     if (E_3RDOCT_BAND[i] > 1e-12) {
         DB_3RDOCT_BAND[i] = 10 * Math.log10(E_3RDOCT_BAND[i]);      // 1/3オクターブに振り分けられたエネルギーをdB化
-        console.log(DB_3RDOCT_BAND[i]);
       }
     DB_BAND_CORRECTED[i] = DB_3RDOCT_BAND[i] + DB_GAIN[i];          // 1/3オクターブバントのdBに外耳ゲインと中耳ゲインを足す
     E_BAND_CORRECTED[i] = Math.pow(10, DB_BAND_CORRECTED[i] / 10);  // 補正されたオクターブバンドdBをエネルギーにする
+    console.log(E_BAND_CORRECTED[17]);
     N_BAND[i] = Math.max(
       0.08 * Math.pow(E_THRESHOLD[i] / E_THRESHOLD[17], 0.23) * Math.pow(1 + (E_BAND_CORRECTED[i] / E_THRESHOLD[i]), 0.23) -1 ,
       0
