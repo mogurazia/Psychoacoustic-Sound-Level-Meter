@@ -141,6 +141,7 @@ function calculateAcousticParameters(buffer, sampleRate) {
     for (let j = 0; j < 30; j++) {
       if (f >= F_3RDOCT_LOWER[j] && f < F_3RDOCT_UPPER[j]) {
         E_3RDOCT_BAND[j] += L_ENERGY;                               // = sumifs(L_ENERGY, f >= Lower_cutoff & f < upper_cuttoff)
+        console.log(E_3RDOCT_BAND[j]);
         break;
       }
     }
