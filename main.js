@@ -70,7 +70,7 @@ function updateAll() {
   
   const results = calculateAcousticParameters(buffer, sampleRate);
   
-  document.getElementById("dbaValue").textContent = results.SPL.toFixed(1);
+  //document.getElementById("dbaValue").textContent = results.SPL.toFixed(1);
   document.getElementById("loudnessValue").textContent = results.loudness.toFixed(2);
   document.getElementById("sharpnessValue").textContent = results.sharpness.toFixed(2);
 
@@ -81,7 +81,7 @@ function updateAll() {
 // Calculation
 // ------------------------------
 function calculateAcousticParameters(buffer, sampleRate) {
-  const BIN_f = sampleRate / (buffer.length * 2);
+  const BIN_f = sampleRate / analyser.fftSize;
 
   // 3rd oct
   const F_3RDOCT_CENTER = [
@@ -195,7 +195,7 @@ function drawFFT(buffer, sampleRate) {
 
   drawGrid(W, H);
 
-  const BIN_f = sampleRate / (buffer.length * 2);
+  const BIN_f = sampleRate / analyser.fftSize;
   ctx.strokeStyle = "#00FF00";
   ctx.lineWidth = 2;
   ctx.beginPath();
