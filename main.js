@@ -109,11 +109,13 @@ function calculateAcousticParameters(buffer, sampleRate) {
     0.448, 0.554, 0.684, 0.841, 1.005, 1.181, 1.350, 1.473, 1.542, 1.545, 
     1.492, 1.416, 1.347, 1.319, 1.340, 1.359, 1.277, 1.078, 0.830, 0.587, 0.422
   ];
+  //  外耳ゲイン+中耳ゲイン
   const GA = [
     -40, -31.5, -25.5, -21, -18.5, -16, -14, -12, -10.9, -9.2, 
     -8, -6.5, -4.5, -2.9, -2.2, -0.4, 0.1, 0.1, -1.3, 0.6, 
     3.8, 6.8, 8.1, 7.6, 3.7, -3.8, -10.5, -11.7, -10, -30, -57.5
   ];
+  //  可聴レベル(0 phone)のエネルギー値
   const E_THRESHOLD = [
     70794578.4, 7413102.4, 891250.9, 128825, 25118.9, 5623.4, 1412.5, 446.7, 162.2, 61.7, 
     27.5, 13.8, 7.2, 4.2, 2.8, 2, 1.7, 1.7, 2.2, 1.5, 
@@ -124,21 +126,21 @@ function calculateAcousticParameters(buffer, sampleRate) {
   let BAND_dB_3RD_OCT = new Array(31).fill(0);
   let TOTAL_ENERGY_A = 0;
 
-  // FFT描画用
+  // SPA(dBA)計算用
   for (let i = 0; i < buffer.length; i++) {
     let f = i * BIN_f;
-    if (f < 17.8 || f > 22449.2) continue;  //From Lower cutoff of 20Hz band to Upper cuttof of 20kHz band
+    if (f < 17.8 || f > 22449.2) continue;  // 3rd oct, 20Hz Lower cutoff ~ 20kHz upper cuttoff
     
     let L_dB = buffer[i] + offsetDB;
     // SPL計算用のA特性
     let L_dBA = L_dB + Aweight(f);
     TOTAL_ENERGY_A += Math.pow(10, L_dBA / 10); // ➡ return SPLへ
 
-    // 1/3オクターブに振り分け
-    let L_energy = Math.pow(10, L_dB / 10);
+    // 1/3オクターブに振り分け。※ここではまだエネルギー
+    let L_energy = Math.pow(10, L_dB / 10); // =10^(L_db/10)
     for (let j = 0; j < 30; j++) {
       if (f >= LOWER_FRQE_3RD_OCT[j] && f < UPPER_FREQ_3RD_OCT[j]) {
-        BAND_ENERGY_3RD_OCT[j] += L_energy;
+        BAND_ENERGY_3RD_OCT[j] += L_energy;   // = sumifs(L_energy, f >= Lower_cutoff & f < upper_cuttoff)
         break;
       }
     }
@@ -146,18 +148,20 @@ function calculateAcousticParameters(buffer, sampleRate) {
 
   // Loudness計算
   let BAND_ENERGY_CORRECTED = new Array(31).fill(0);
+  let BAND_dB_CORRECTED = new Array(31).fill(0);
   let BAND_N = new Array(31).fill(0);
   let TOTAL_LOUDNESS = 0;
 
   for (let i = 0; i < 30; i++) {
     if (BAND_ENERGY_3RD_OCT[i] > 1e-12) {
-        BAND_dB_3RD_OCT[i] = 10 * Math.log10(BAND_ENERGY_3RD_OCT[i]);
+        BAND_dB_3RD_OCT[i] = 10 * Math.log10(BAND_ENERGY_3RD_OCT[i]);     // 1/3オクターブに振り分けられたエネルギーをdB化
     }
-    BAND_ENERGY_CORRECTED[i] = Math.pow(10, (BAND_dB_3RD_OCT[i] + GA[i]) / 10);
+    BAND_dB_CORRECTED[i] = BAND_dB_3RD_OCT[i] + GA[i];                    // 1/3オクターブバントのdBに外耳ゲインと中耳ゲインを足す
+    BAND_ENERGY_CORRECTED[i] = Math.pow(10, BAND_dB_CORRECTED[i] / 10);   // 補正されたオクターブバンドdBをエネルギーにする
     BAND_N[i] = Math.max(
-      0.08 * Math.pow(E_THRESHOLD[i] / E_THRESHOLD[17], 0.23) * Math.pow(1 + (BAND_ENERGY_CORRECTED[i] - E_THRESHOLD[i]) / E_THRESHOLD[i], 0.23) -1 ,
+      0.08 * Math.pow(E_THRESHOLD[i] / E_THRESHOLD[17], 0.23) * Math.pow(1 + BAND_ENERGY_CORRECTED[i] / E_THRESHOLD[i], 0.23) -1 ,
       0
-    );
+    );  //=MAX(0.08*(Ethr/E0)^0.23*((1+E/Ethr)^0.23-1),0)
     TOTAL_LOUDNESS += BAND_N[i] / DELTA_FREQ_EBR[i];
   }
 
