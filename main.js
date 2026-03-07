@@ -138,10 +138,9 @@ function calculateAcousticParameters(buffer, sampleRate) {
 
     // 1/3オクターブに振り分け。※ここではまだエネルギー
     let L_ENERGY = Math.pow(10, L_DB / 10); // =10^(L_db/10)
-    for (let j = 0; j < 30; j++) {
+    for (let j = 0; j < 31; j++) {
       if (f >= F_3RDOCT_LOWER[j] && f < F_3RDOCT_UPPER[j]) {
         E_3RDOCT_BAND[j] += L_ENERGY;                               // = sumifs(L_ENERGY, f >= Lower_cutoff & f < upper_cuttoff)
-        console.log(E_3RDOCT_BAND[j]);
         break;
       }
     }
@@ -153,10 +152,11 @@ function calculateAcousticParameters(buffer, sampleRate) {
   let N_BAND = new Array(31).fill(0);
   let TOTAL_LOUDNESS = 0;
 
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 31; i++) {
     if (E_3RDOCT_BAND[i] > 1e-12) {
         DB_3RDOCT_BAND[i] = 10 * Math.log10(E_3RDOCT_BAND[i]);      // 1/3オクターブに振り分けられたエネルギーをdB化
-    }
+        console.log(DB_3RDOCT_BAND[j]);
+      }
     DB_BAND_CORRECTED[i] = DB_3RDOCT_BAND[i] + DB_GAIN[i];          // 1/3オクターブバントのdBに外耳ゲインと中耳ゲインを足す
     E_BAND_CORRECTED[i] = Math.pow(10, DB_BAND_CORRECTED[i] / 10);  // 補正されたオクターブバンドdBをエネルギーにする
     N_BAND[i] = Math.max(
@@ -171,7 +171,7 @@ function calculateAcousticParameters(buffer, sampleRate) {
   let BAND_S = new Array(31).fill(0);
   let TOTAL_SHARPNESS = 0;
 
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 31; i++) {
     AURES[i] = 0.078 * (Math.exp(0.171 * EBR_CENTER[i]) / EBR_CENTER[i]) * (TOTAL_LOUDNESS / Math.log(0.05 * TOTAL_LOUDNESS + 1));
     BAND_S[i] = N_BAND[i] * EBR_CENTER[i] * AURES[i];
     TOTAL_SHARPNESS += BAND_S[i];
