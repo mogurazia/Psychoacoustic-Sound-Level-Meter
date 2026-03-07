@@ -73,7 +73,6 @@ function updateAll() {
   document.getElementById("dbaValue").textContent = results.SPL.toFixed(1);
   document.getElementById("loudnessValue").textContent = results.loudness.toFixed(2);
   document.getElementById("sharpnessValue").textContent = results.sharpness.toFixed(2);
-  document.getElementById("hogeValue").textContent = results.HOGEHOGE.toFixed(2);
 
   drawFFT(buffer, sampleRate);
 }
@@ -83,7 +82,6 @@ function updateAll() {
 // ------------------------------
 function calculateAcousticParameters(buffer, sampleRate) {
   const BIN_f = sampleRate / (buffer.length * 2);
-  let myMonitor = 0;
 
   // 3rd oct
   const F_3RDOCT_CENTER = [
@@ -146,7 +144,6 @@ function calculateAcousticParameters(buffer, sampleRate) {
         break;
       }
     }
-    myMonitor = E_3RDOCT_BAND[17];
   }
 
   // Loudness計算
@@ -183,7 +180,6 @@ function calculateAcousticParameters(buffer, sampleRate) {
     loudness: TOTAL_LOUDNESS,
     sharpness: TOTAL_SHARPNESS,
     SPL: 10 * Math.log10(E_TOTAL_AW + 1e-12),
-    HOGEHOGE: myMonitor
   };
 }
 
