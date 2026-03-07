@@ -144,8 +144,8 @@ function calculateAcousticParameters(buffer, sampleRate) {
         break;
       }
     }
-    console.log(E_3RDOCT_BAND[17]);
   }
+  console.log(E_3RDOCT_BAND[17]);
 
   // Loudness計算
   let E_BAND_CORRECTED = new Array(31).fill(0);
