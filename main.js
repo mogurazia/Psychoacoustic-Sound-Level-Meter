@@ -82,7 +82,6 @@ function updateAll() {
 // ------------------------------
 function calculateAcousticParameters(buffer, sampleRate) {
   const BIN_f = sampleRate / analyser.fftSize;
-  console.log(BIN_f);
 
   // 3rd oct
   const F_3RDOCT_CENTER = [
@@ -131,7 +130,8 @@ function calculateAcousticParameters(buffer, sampleRate) {
   for (let i = 0; i < buffer.length; i++) {
     let f = i * BIN_f;
     if (f < 17.8 || f > 22449.2) continue;                          // 3rd oct, 20Hz Lower cutoff ~ 20kHz upper cuttoff
-    
+      console.log(f);
+
     let L_DB = buffer[i] + DB_OFFSET;
     // SPL計算用のA特性
     let L_DBA = L_DB + Aweight(f);
