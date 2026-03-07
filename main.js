@@ -133,7 +133,7 @@ function calculateAcousticParameters(buffer, sampleRate) {
     let E_3RDOCT_BAND = new Float32Array(BAND_COUNT).fill(0);
     let E_TOTAL_AW = 0;
     let BandMaxHz = new Array(BAND_COUNT).fill(0);
-    let BandMaxDB = new Array(BAND_COUNT).fill(0);
+    let BandMaxDB = new Array(BAND_COUNT).fill(-Infinity);
 
     // --- 周波数ビンごとの集計 ---
     for (let i = 0; i < buffer.length; i++) {
