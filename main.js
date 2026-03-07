@@ -159,10 +159,9 @@ function calculateAcousticParameters(buffer, sampleRate) {
     DB_BAND_CORRECTED[i] = DB_3RDOCT_BAND[i] + DB_GAIN[i];          // 1/3オクターブバントのdBに外耳ゲインと中耳ゲインを足す
     E_BAND_CORRECTED[i] = Math.pow(10, DB_BAND_CORRECTED[i] / 10);  // 補正されたオクターブバンドdBをエネルギーにする
     N_BAND[i] = Math.max(
-      0.08 * Math.pow(E_THRESHOLD[i] / E_THRESHOLD[17], 0.23) * Math.pow(1 + (E_BAND_CORRECTED[i] / E_THRESHOLD[i]), 0.23) -1 ,
+      0.08 * Math.pow(E_THRESHOLD[i] / E_THRESHOLD[17], 0.23) * (Math.pow(1 + E_BAND_CORRECTED[i] / E_THRESHOLD[i], 0.23) -1),
       0
-    );  //=MAX(0.08*(Ethr/E0)^0.23*((1+E/Ethr)^0.23-1),0)
-    console.log(N_BAND[i]);
+    );
     TOTAL_LOUDNESS += N_BAND[i] / EBR_DELTA[i];
   }
 
