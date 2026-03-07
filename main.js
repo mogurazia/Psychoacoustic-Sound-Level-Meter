@@ -70,7 +70,7 @@ function updateAll() {
   
   const results = calculateAcousticParameters(buffer, sampleRate);
   
-  //document.getElementById("dbaValue").textContent = results.SPL.toFixed(1);
+  document.getElementById("dbaValue").textContent = results.SPL.toFixed(1);
   document.getElementById("loudnessValue").textContent = results.loudness.toFixed(2);
   document.getElementById("sharpnessValue").textContent = results.sharpness.toFixed(2);
 
@@ -82,6 +82,7 @@ function updateAll() {
 // ------------------------------
 function calculateAcousticParameters(buffer, sampleRate) {
   const BIN_f = sampleRate / analyser.fftSize;
+  console.log(BIN_f);
 
   // 3rd oct
   const F_3RDOCT_CENTER = [
@@ -158,7 +159,7 @@ function calculateAcousticParameters(buffer, sampleRate) {
       }
     DB_BAND_CORRECTED[i] = DB_3RDOCT_BAND[i] + DB_GAIN[i];          // 1/3オクターブバントのdBに外耳ゲインと中耳ゲインを足す
     E_BAND_CORRECTED[i] = Math.pow(10, DB_BAND_CORRECTED[i] / 10);  // 補正されたオクターブバンドdBをエネルギーにする
-    console.log(E_BAND_CORRECTED[17]);
+    //console.log(E_BAND_CORRECTED[17]);
     N_BAND[i] = Math.max(
       0.08 * Math.pow(E_THRESHOLD[i] / E_THRESHOLD[17], 0.23) * Math.pow(1 + (E_BAND_CORRECTED[i] / E_THRESHOLD[i]), 0.23) -1 ,
       0
