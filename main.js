@@ -145,8 +145,7 @@ function calculateAcousticParameters(buffer, sampleRate) {
       }
     }
   }
-  console.log(E_3RDOCT_BAND[17]);
-
+  
   // Loudness計算
   let E_BAND_CORRECTED = new Array(31).fill(0);
   let DB_BAND_CORRECTED = new Array(31).fill(0);
@@ -158,9 +157,8 @@ function calculateAcousticParameters(buffer, sampleRate) {
         DB_3RDOCT_BAND[i] = 10 * Math.log10(E_3RDOCT_BAND[i]);      // 1/3オクターブに振り分けられたエネルギーをdB化
       }
     DB_BAND_CORRECTED[i] = DB_3RDOCT_BAND[i] + DB_GAIN[i];          // 1/3オクターブバントのdBに外耳ゲインと中耳ゲインを足す
-    //console.log(DB_BAND_CORRECTED[17]);
     E_BAND_CORRECTED[i] = Math.pow(10, DB_BAND_CORRECTED[i] / 10);  // 補正されたオクターブバンドdBをエネルギーにする
-    //console.log(E_BAND_CORRECTED[17]);
+    console.log(E_BAND_CORRECTED[17]);
     N_BAND[i] = Math.max(
       0.08 * Math.pow(E_THRESHOLD[i] / E_THRESHOLD[17], 0.23) * Math.pow(1 + (E_BAND_CORRECTED[i] / E_THRESHOLD[i]), 0.23) -1 ,
       0
