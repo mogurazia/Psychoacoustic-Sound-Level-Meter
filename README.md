@@ -1,23 +1,24 @@
-# Personal PWA App
+# Simple Sound Level Meter (PWA)
 
-This is a personal project created for my own use.
-You are free to look at the code or use it if you find it helpful,
-but please note the following:
+This app is a simple sound level meter designed for use on smartphones.
+It displays psychoacoustic metrics: **Loudness** and **Sharpness**.
 
-- I do not provide support or maintenance for this project.
-- Features may change or break without notice.
-- Issues and pull requests may not be responded to.
+Please note that this tool does not perform precise or professional-grade calculations.
+The default calibration value is set to 110 dB, which is a common reference level for
+typical smartphone microphones, but actual sensitivity varies significantly by device.
 
-Use at your own discretion.
+This project was created for my personal use. You are free to use it if you find it helpful,
+but I do not provide support or maintenance. Features may change or stop working without notice.
 
 
-# 個人用 PWA アプリ
+# 簡易的な騒音計（PWA）
 
-このリポジトリは私個人の利用を目的として作成したものです。
-もし役に立つと思えば自由に利用して構いませんが、以下の点をご理解ください。
+このアプリはスマートフォンでの使用を想定した、簡易的な騒音計です。
+心理音響の「ラウドネス」と「シャープネス」を表示します。
 
-- このプロジェクトに対するサポートやメンテナンスは行いません。
-- 機能は予告なく変更・削除される可能性があります。
-- Issue や Pull Request に対応しない場合があります。
+精密な測定や専門用途を目的としたものではありませんのでご注意ください。
+補正値の初期値として、一般的なスマートフォンの目安である 110 dB を設定していますが、
+実際の値は機種によって大きく異なる場合があります。
 
-ご自身の判断でご利用ください。
+本アプリは個人用として作成したものですが、必要であれば自由に利用して構いません。
+ただし、サポートやメンテナンスは行いませんのでご了承ください。
