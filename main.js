@@ -130,7 +130,6 @@ function calculateAcousticParameters(buffer, sampleRate) {
   for (let i = 0; i < buffer.length; i++) {
     let f = i * BIN_f;
     if (f < 17.8 || f > 22449.2) continue;                          // 3rd oct, 20Hz Lower cutoff ~ 20kHz upper cuttoff
-      console.log(f);
 
     let L_DB = buffer[i] + DB_OFFSET;
     // SPL計算用のA特性
@@ -145,6 +144,7 @@ function calculateAcousticParameters(buffer, sampleRate) {
         break;
       }
     }
+    console.log("E3b: " && E_3RDOCT_BAND[17]);
   }
 
   // Loudness計算
@@ -158,12 +158,14 @@ function calculateAcousticParameters(buffer, sampleRate) {
         DB_3RDOCT_BAND[i] = 10 * Math.log10(E_3RDOCT_BAND[i]);      // 1/3オクターブに振り分けられたエネルギーをdB化
       }
     DB_BAND_CORRECTED[i] = DB_3RDOCT_BAND[i] + DB_GAIN[i];          // 1/3オクターブバントのdBに外耳ゲインと中耳ゲインを足す
+    console.log("D3b: " && DB_BAND_CORRECTED[17]); //コンソール
     E_BAND_CORRECTED[i] = Math.pow(10, DB_BAND_CORRECTED[i] / 10);  // 補正されたオクターブバンドdBをエネルギーにする
-    //console.log(E_BAND_CORRECTED[17]);
+    console.log("EBC: " && E_BAND_CORRECTED[17]);
     N_BAND[i] = Math.max(
       0.08 * Math.pow(E_THRESHOLD[i] / E_THRESHOLD[17], 0.23) * Math.pow(1 + (E_BAND_CORRECTED[i] / E_THRESHOLD[i]), 0.23) -1 ,
       0
     );  //=MAX(0.08*(Ethr/E0)^0.23*((1+E/Ethr)^0.23-1),0)
+    console.log("N': " && N_BAND[17]);
     TOTAL_LOUDNESS += N_BAND[i] / EBR_DELTA[i];
   }
 
