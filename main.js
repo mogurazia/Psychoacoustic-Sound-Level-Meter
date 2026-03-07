@@ -173,7 +173,7 @@ function calculateAcousticParameters(buffer, sampleRate) {
   for (let i = 0; i < 31; i++) {
     AURES[i] = 0.078 * (Math.exp(0.171 * EBR_CENTER[i]) / EBR_CENTER[i]) * (TOTAL_LOUDNESS / Math.log(0.05 * TOTAL_LOUDNESS + 1));
     BAND_S[i] = N_BAND[i] * EBR_CENTER[i] * AURES[i];
-    TOTAL_SHARPNESS += BAND_S[i];
+    TOTAL_SHARPNESS += 0.11 * BAND_S[i] / TOTAL_LOUDNESS;
   }
 
   return {
