@@ -123,6 +123,7 @@ function updateAll() {
     document.getElementById("dbaValue").textContent = results.SPL.toFixed(1);
     document.getElementById("loudnessValue").textContent = results.loudness.toFixed(2);
     document.getElementById("sharpnessValue").textContent = results.sharpness.toFixed(2);
+    document.getElementById("sharpnessHz").textContent = results.sharpnessPeakHz.toFixed(0);
 
     drawFFT(buffer, sampleRate);
 }
@@ -131,6 +132,8 @@ function calculateAcousticParameters(buffer, sampleRate) {
     const BIN_f = sampleRate / analyser.fftSize;
     let E_3RDOCT_BAND = new Float32Array(BAND_COUNT).fill(0);
     let E_TOTAL_AW = 0;
+    let BandMaxHz = new Array(BAND_COUNT).fill(0);
+    let BandMaxDB = new Array(BAND_COUNT).fill(0);
 
     // --- 周波数ビンごとの集計 ---
     for (let i = 0; i < buffer.length; i++) {
@@ -149,6 +152,11 @@ function calculateAcousticParameters(buffer, sampleRate) {
             if (f >= F_3RDOCT_LOWER[j] && f < F_3RDOCT_UPPER[j]) {
                 E_3RDOCT_BAND[j] += L_ENERGY;
                 break;
+            }
+            //バンド毎ピークの保存
+            if (L_DB > BandMaxDB[j]) {
+                BandMaxDB[j] = L_DB;
+                BandMaxHz[j] = f;
             }
         }
     }
@@ -176,6 +184,8 @@ function calculateAcousticParameters(buffer, sampleRate) {
 
     // --- Sharpness 計算 ---
     let TOTAL_SHARPNESS = 0;
+    let maxBandS = -1;
+    let maxSIndex = -1;
     // 無音付近での NaN 回避
     if (TOTAL_LOUDNESS > 0.0001) {
         const sharpnessLogTerm = TOTAL_LOUDNESS / Math.log(0.05 * TOTAL_LOUDNESS + 1);
@@ -183,13 +193,18 @@ function calculateAcousticParameters(buffer, sampleRate) {
             const aures = 0.078 * (Math.exp(0.171 * EBR_CENTER[i]) / EBR_CENTER[i]) * sharpnessLogTerm;
             const bandS = N_BAND[i] * EBR_CENTER[i] * aures;
             TOTAL_SHARPNESS += 0.11 * bandS / TOTAL_LOUDNESS;
+            if (bandS > maxBandS){
+                maxBandS = bandS;
+                maxSIndex = i;
+            }
         }
     }
 
     return {
         loudness: TOTAL_LOUDNESS,
         sharpness: TOTAL_SHARPNESS,
-        SPL: 10 * Math.log10(E_TOTAL_AW + 1e-12)
+        SPL: 10 * Math.log10(E_TOTAL_AW + 1e-12),
+        sharpnessPeakHz: BandMaxHz[maxSIndex],
     };
 }
 
