@@ -151,22 +151,23 @@ function calculateAcousticParameters(buffer, sampleRate) {
         for (let j = 0; j < BAND_COUNT; j++) {
             if (f >= F_3RDOCT_LOWER[j] && f < F_3RDOCT_UPPER[j]) {
                 E_3RDOCT_BAND[j] += L_ENERGY;
+                
+                // バンド内ピーク保存
+                //if (L_DB > BandMaxDB[j]) {
+                    //BandMaxDB[j] = L_DB;
+                    //BandMaxHz[j] = f;
+                //}
+
+                break;
             }
-            break;
-        }
-        バンド毎ピークの保存
-        if (L_DB > BandMaxDB[j]) {
-            BandMaxDB[j] = L_DB;
-            BandMaxHz[j] = f;
+                // バンド毎ピークの保存
+                if (L_DB > BandMaxDB[j]) {
+                   BandMaxDB[j] = L_DB;
+                   BandMaxHz[j] = f;
+                }
         }
     }
-        
-                // バンド毎ピークの保存
-                // if (L_DB > BandMaxDB[j]) {
-                //   BandMaxDB[j] = L_DB;
-                //   BandMaxHz[j] = f;
-                // }
-
+    
     // --- Loudness 計算 ---
     let TOTAL_LOUDNESS = 0;
     const N_BAND = new Float32Array(BAND_COUNT);
