@@ -4,6 +4,12 @@
 const DB_OFFSET_DEFAULT = 110;  // AudioContextの仕様 -100 ~ 0 dB ➡ スマホの場合およそ +110dB 程度なのでデフォルト補正値を +100 に設定
 const BAND_COUNT = 31;
 
+// 3rd oct center, Hz
+const F_3RDOCT_CENTER = [
+    20, 25, 31.5, 40, 50, 63, 80, 100, 125, 160, 
+    200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 
+    2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 12500, 16000, 20000
+];
 // 3rd octove lower cutoff, Hz
 const F_3RDOCT_LOWER = [
     17.8, 22.3, 28.1, 35.6, 44.5, 56.1, 71.3, 89.1, 111.4, 142.5,
@@ -152,11 +158,11 @@ function calculateAcousticParameters(buffer, sampleRate) {
             if (f >= F_3RDOCT_LOWER[j] && f < F_3RDOCT_UPPER[j]) {
                 E_3RDOCT_BAND[j] += L_ENERGY;
                 
-                // バンド内ピーク保存
-                if (L_DB > BandMaxDB[j]) {
-                    BandMaxDB[j] = L_DB;
-                    BandMaxHz[j] = f;
-                }
+                // // バンド内ピーク保存
+                // if (L_DB > BandMaxDB[j]) {
+                //     BandMaxDB[j] = L_DB;
+                //     BandMaxHz[j] = f;
+                // }
 
                 // break;
             }
@@ -200,6 +206,7 @@ function calculateAcousticParameters(buffer, sampleRate) {
             const aures = 0.078 * (Math.exp(0.171 * EBR_CENTER[i]) / EBR_CENTER[i]) * sharpnessLogTerm;
             const bandS = N_BAND[i] * EBR_CENTER[i] * aures;
             TOTAL_SHARPNESS += 0.11 * bandS / TOTAL_LOUDNESS;
+            //
             if (bandS > maxBandS){
                 maxBandS = bandS;
                 maxSIndex = i;
@@ -211,7 +218,7 @@ function calculateAcousticParameters(buffer, sampleRate) {
         loudness: TOTAL_LOUDNESS,
         sharpness: TOTAL_SHARPNESS,
         SPL: 10 * Math.log10(E_TOTAL_AW + 1e-12),
-        sharpnessPeakHz: BandMaxHz[maxSIndex],
+        sharpnessPeakHz: F_3RDOCT_CENTER[maxSIndex] //BandMaxHz[maxSIndex],
     };
 }
 
