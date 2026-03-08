@@ -253,21 +253,27 @@ function dBToY(dB, H) {
 }
 
 function drawGrid(W, H) {
-    ctx.strokeStyle = "#333";
+    ctx.strokeStyle = "#888";
     ctx.fillStyle = "#888";
     ctx.font = "10px sans-serif";
 
-    const freqs = [20, 100, 1000, 10000, 20000];
-    for (const f of freqs) {
+    const MajorX = [20, 100, 1000, 10000, 20000];
+    for (const f of MajorX) {
         const x = freqToX(f, W);
         ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
         ctx.fillText(f >= 1000 ? (f / 1000) + "k" : f, x + 2, H - 5);
     }
-
-    for (let d = -40; d <= 40; d += 20) {
+    for (let d = -40; d <= 40; d += 10) {
         const y = dBToY(d, H);
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
         ctx.fillText(d + "dB", 5, y - 5);
+    }
+
+    ctx.strokeStyle = "#333";
+    const MinorX = [30,40,50,60,70,80,90,200,300,400,500,600,700,800,900,2000,3000,4000,5000,6000,7000,8000,9000];
+    for (const f of MinorX) {
+        const x = freqToX(f, W);
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
     }
 }
 
