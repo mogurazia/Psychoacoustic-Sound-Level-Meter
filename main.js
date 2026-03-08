@@ -148,20 +148,16 @@ function calculateAcousticParameters(buffer, sampleRate) {
 
         // 1/3オクターブバンドへの振り分け
         const L_ENERGY = Math.pow(10, L_DB / 10);
-        let bandIndex = -1;
         for (let j = 0; j < BAND_COUNT; j++) {
             if (f >= F_3RDOCT_LOWER[j] && f < F_3RDOCT_UPPER[j]) {
-                bandIndex = j;
-                break;
+                E_3RDOCT_BAND[j] += L_ENERGY;
             }
+            break;
         }
-        if (bandIndex === -1) continue;
-        E_3RDOCT_BAND[bandIndex] += L_ENERGY;
-                        
-        // バンド内ピーク保存
-        if (L_DB > BandMaxDB[bandIndex]) {
-            BandMaxDB[bandIndex] = L_DB;
-            BandMaxHz[bandIndex] = f;
+        バンド毎ピークの保存
+        if (L_DB > BandMaxDB[j]) {
+            BandMaxDB[j] = L_DB;
+            BandMaxHz[j] = f;
         }
     }
         
