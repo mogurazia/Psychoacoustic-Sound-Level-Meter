@@ -167,7 +167,7 @@ function calculateAcousticParameters(buffer, sampleRate) {
                 }
         }
     }
-    
+
     // --- Loudness 計算 ---
     let TOTAL_LOUDNESS = 0;
     const N_BAND = new Float32Array(BAND_COUNT);
