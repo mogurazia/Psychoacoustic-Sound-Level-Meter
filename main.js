@@ -129,7 +129,7 @@ function updateAll() {
     document.getElementById("dbaValue").textContent = results.SPL.toFixed(1);
     document.getElementById("loudnessValue").textContent = results.loudness.toFixed(2);
     document.getElementById("sharpnessValue").textContent = results.sharpness.toFixed(2);
-    document.getElementById("sharpnessHz").textContent = results.sharpnessPeakHz.toFixed(0);
+    // document.getElementById("sharpnessHz").textContent = results.sharpnessPeakHz.toFixed(0);
 
     drawFFT(buffer, sampleRate);
 }
@@ -138,8 +138,8 @@ function calculateAcousticParameters(buffer, sampleRate) {
     const BIN_f = sampleRate / analyser.fftSize;
     let E_3RDOCT_BAND = new Float32Array(BAND_COUNT).fill(0);
     let E_TOTAL_AW = 0;
-    let BandMaxHz = new Array(BAND_COUNT).fill(0);
-    let BandMaxDB = new Array(BAND_COUNT).fill(-Infinity);
+    // let BandMaxHz = new Array(BAND_COUNT).fill(0);
+    // let BandMaxDB = new Array(BAND_COUNT).fill(-Infinity);
 
     // --- 周波数ビンごとの集計 ---
     for (let i = 0; i < buffer.length; i++) {
@@ -157,14 +157,6 @@ function calculateAcousticParameters(buffer, sampleRate) {
         for (let j = 0; j < BAND_COUNT; j++) {
             if (f >= F_3RDOCT_LOWER[j] && f < F_3RDOCT_UPPER[j]) {
                 E_3RDOCT_BAND[j] += L_ENERGY;
-                
-                // // バンド内ピーク保存
-                // if (L_DB > BandMaxDB[j]) {
-                //     BandMaxDB[j] = L_DB;
-                //     BandMaxHz[j] = f;
-                // }
-
-                // break;
             }
                 // // バンド毎ピークの保存
                 // if (L_DB > BandMaxDB[j]) {
@@ -218,7 +210,7 @@ function calculateAcousticParameters(buffer, sampleRate) {
         loudness: TOTAL_LOUDNESS,
         sharpness: TOTAL_SHARPNESS,
         SPL: 10 * Math.log10(E_TOTAL_AW + 1e-12),
-        sharpnessPeakHz: F_3RDOCT_CENTER[maxSIndex] //BandMaxHz[maxSIndex],
+        // sharpnessPeakHz: F_3RDOCT_CENTER[maxSIndex] //BandMaxHz[maxSIndex],
     };
 }
 
