@@ -1,5 +1,5 @@
 # Simple Sound Level Meter (PWA)
-https://mogurazia.github.io/Psychoacoustic-Sound-Level-Meter/
+https://moguramode.github.io/Psychoacoustic-Sound-Level-Meter/
 
 This app is a simple sound level meter designed for use on smartphones.
 It displays psychoacoustic metrics: **Loudness** and **Sharpness**.
@@ -13,7 +13,7 @@ but I do not provide support or maintenance. Features may change or stop working
 
 
 # 簡易的な騒音計（PWA）
-https://mogurazia.github.io/Psychoacoustic-Sound-Level-Meter/
+https://moguramode.github.io/Psychoacoustic-Sound-Level-Meter/
 
 このアプリはスマートフォンでの使用を想定した、簡易的な騒音計です。
 心理音響の「ラウドネス」と「シャープネス」を表示します。
