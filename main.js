@@ -56,6 +56,11 @@ let drawTimer = null;
 const canvas = document.getElementById("psdCanvas");
 const ctx = canvas.getContext("2d");
 
+// FFTグラフ用スライド縦線
+let sliderFreq = 1000; // 初期周波数（Hz）
+let isSliding = false;
+let sliderX = null;
+
 // ==========================================
 // 2. UI & Audio Control
 // ==========================================
@@ -242,6 +247,24 @@ function drawFFT(buffer, sampleRate) {
         else { ctx.lineTo(x, y); }
     }
     ctx.stroke();
+
+    // --- スライド縦線の描画 ---
+    ctx.save();
+    ctx.strokeStyle = "#FF0000";
+    ctx.lineWidth = 2;
+    let x = freqToX(sliderFreq, W);
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, H);
+    ctx.stroke();
+    ctx.restore();
+
+    // 周波数ラベル表示
+    ctx.save();
+    ctx.fillStyle = "#FF0000";
+    ctx.font = "bold 14px sans-serif";
+    ctx.fillText(sliderFreq.toFixed(1) + " Hz", x + 5, 20);
+    ctx.restore();
 }
 
 function freqToX(f, W) { 
@@ -282,3 +305,57 @@ function Aweight(x) {
     const x2 = x * x;
     return 20 * Math.log10((f4 * x2 * x2) / ((x2 + f1) * Math.sqrt(x2 + f2) * Math.sqrt(x2 + f3) * (x2 + f4))) + 2;
 }
+
+// --- FFTグラフスライド縦線のスワイプ操作 ---
+canvas.addEventListener("touchstart", function(e) {
+    if (e.touches.length === 1) {
+        isSliding = true;
+        sliderX = e.touches[0].clientX;
+        e.preventDefault();
+    }
+});
+canvas.addEventListener("touchmove", function(e) {
+    if (isSliding && e.touches.length === 1) {
+        let dx = e.touches[0].clientX - sliderX;
+        sliderX = e.touches[0].clientX;
+        // キャンバス幅に合わせて周波数変換
+        let W = canvas.width;
+        let x = freqToX(sliderFreq, W) + dx;
+        // x座標から周波数へ逆変換
+        let minX = freqToX(20, W);
+        let maxX = freqToX(20000, W);
+        x = Math.max(minX, Math.min(maxX, x));
+        sliderFreq = 20 * Math.pow(10, (x / W) * (Math.log10(20000) - Math.log10(20)) + Math.log10(20) - Math.log10(20));
+        e.preventDefault();
+    }
+});
+canvas.addEventListener("touchend", function(e) {
+    isSliding = false;
+    sliderX = null;
+    e.preventDefault();
+});
+// マウス操作にも対応（PC用）
+canvas.addEventListener("mousedown", function(e) {
+    isSliding = true;
+    sliderX = e.clientX;
+});
+canvas.addEventListener("mousemove", function(e) {
+    if (isSliding) {
+        let dx = e.clientX - sliderX;
+        sliderX = e.clientX;
+        let W = canvas.width;
+        let x = freqToX(sliderFreq, W) + dx;
+        let minX = freqToX(20, W);
+        let maxX = freqToX(20000, W);
+        x = Math.max(minX, Math.min(maxX, x));
+        sliderFreq = 20 * Math.pow(10, (x / W) * (Math.log10(20000) - Math.log10(20)) + Math.log10(20) - Math.log10(20));
+    }
+});
+canvas.addEventListener("mouseup", function(e) {
+    isSliding = false;
+    sliderX = null;
+});
+canvas.addEventListener("mouseleave", function(e) {
+    isSliding = false;
+    sliderX = null;
+});
