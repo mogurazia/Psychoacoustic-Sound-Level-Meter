@@ -1,6 +1,6 @@
 {
-  "name": "Noise Analyzer",
-  "short_name": "NoiseAnalyzer",
+  "name": "Psychoacoustic Sound Level Meter",
+  "short_name": "SoundLevel",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
