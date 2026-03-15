@@ -1,8 +1,8 @@
 # Psychoacoustic Sound Level Meter (PWA)
 https://moguramode.github.io/Psychoacoustic-Sound-Level-Meter/
 
-A browser-based sound analysis tool implementing key psychoacoustic metrics.
-Runs entirely on WebAudio API and works as a Progressive Web App (PWA).
+A browser-based sound level analysis tool using psychoacoustic metrics.
+It operate on WebAudio API and works as a Progressive Web App (PWA).
 Please note that this tool does not perform precise or professional-grade calculations.
 This project was created for my personal use. You are free to use it if you find it helpful,
 but I do not provide support or maintenance. Features may change or stop working without notice.
