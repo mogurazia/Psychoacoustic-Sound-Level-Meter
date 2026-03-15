@@ -1,7 +1,7 @@
 // ==========================================
 // SPL(dBA), Loudness(sone), Sharpness(acum) Realtime Analyzer
 // ==========================================
-const DB_OFFSET_DEFAULT = 110;  // AudioContextの仕様 -100 ~ 0 dB ➡ スマホの場合およそ +110dB 程度なのでデフォルト補正値を +100 に設定
+const DB_OFFSET_DEFAULT = 110;  // AudioContext仕様 -100 ~ 0 dB > Androidスマホはおよそ +110dB 程度、iPhoneは120dBぐらい
 const BAND_COUNT = 31;
 
 // 3rd oct center, Hz
@@ -50,7 +50,7 @@ const E_THRESHOLD = [
 // グローバル変数
 let audioCtx, analyser, micStream;
 let running = false;
-let DB_OFFSET = DB_OFFSET_DEFAULT;
+let DB_OFFSET = parseFloat(localStorage.getItem('dbOffset')) || DB_OFFSET_DEFAULT;
 let drawTimer = null;
 
 const canvas = document.getElementById("psdCanvas");
@@ -83,6 +83,7 @@ document.getElementById("calibBtn").onclick = () => {
 
 document.getElementById("calibOk").onclick = () => {
     DB_OFFSET = parseFloat(document.getElementById("calibInput").value) || DB_OFFSET_DEFAULT;
+    localStorage.setItem('dbOffset', DB_OFFSET);
     document.getElementById("calibDialog").style.display = "none";
 };
 
